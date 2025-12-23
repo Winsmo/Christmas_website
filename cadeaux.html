@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cadeaux - Noël</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      transform-style: preserve-3d;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 10%, #12351f 0%, transparent 40%), linear-gradient(135deg, #1a4d47, #072b2a);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 100vmin;
+      transform-style: preserve-3d;
+      margin: 0;
+      padding: 0;
+    }
+
+    .tree {
+      position: relative;
+      height: 50vmin;
+      width: 25vmin;
+      transform-style: preserve-3d;
+      animation: spin calc(var(--spin-speed, 2) * 1s) infinite linear var(--direction, normal);
+    }
+
+    .tree__light {
+      transform-style: preserve-3d;
+      position: absolute;
+      aspect-ratio: 1;
+      width: calc(var(--light-size, 1) * 1vmin);
+      border-radius: 50%;
+      animation: flash calc(var(--speed) * 1s) calc(var(--delay) * 1s) infinite var(--flash-timing-function, steps(1)), appear calc(var(--appear-speed, 0.1) * 1s) calc(var(--appear) * var(--appear-delay-step, 0.05) * 1s) both;
+      left: 50%;
+      transform: translate(-50%, 50%) rotateY(calc(var(--rotate, 0) * 1deg)) translate3d(0, 0, calc(var(--radius, 0) * 1vmin));
+      bottom: calc(var(--y, 0) * 1%);
+      box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-one, red);
+    }
+
+    .tree__star {
+      stroke-width: 1.25vmin;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke: hsl(45, 80%, 80%);
+      filter: drop-shadow(0 0 2vmin hsl(45, 90%, 90%));
+      height: 5vmin;
+      width: 5vmin;
+      overflow: visible !important;
+      bottom: calc(100% + (var(--light-size) * 0.5vmin));
+      left: 50%;
+      transform: translate(-50%, 0) rotateY(20deg);
+      position: absolute;
+      stroke-dasharray: 1000 1000;
+      fill: none;
+      animation: stroke 1s calc(var(--delay) * var(--appear-delay-step, 0.05) * 1s) both, fill 1s calc((var(--delay) + 10) * var(--appear-delay-step, 0.05) * 1s) both, star-spin calc(var(--spin-speed, 2) * 1s) infinite linear var(--star-direction, normal);
+    }
+
+    @keyframes star-spin {
+      to {
+        transform: translate(-50%, 0) rotateY(calc(20deg + (var(--counter-star, 0) * 360deg)));
+      }
+    }
+
+    @keyframes fill {
+      to {
+        fill: hsla(45, 80%, 80%, calc(var(--fill-star, 0) * 1));
+      }
+    }
+
+    @keyframes stroke {
+      from {
+        stroke-dashoffset: -1000;
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotateY(360deg);
+      }
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+      }
+    }
+
+    @keyframes flash {
+      0%, 100% {
+        background: var(--color-one, red);
+        box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-one);
+      }
+      20% {
+        background: var(--color-two, white);
+        box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-two);
+      }
+      40% {
+        background: var(--color-three, red);
+        box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-three);
+      }
+      60% {
+        background: var(--color-four, white);
+        box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-four);
+      }
+      80% {
+        background: var(--color-five, red);
+        box-shadow: 0 0 calc(var(--light-size) * 0.5vmin) var(--color-five);
+      }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      border-radius: 6px;
+      font-family: 'Mountains of Christmas', cursive;
+      z-index: 50;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-button:active {
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .gifts-container {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 40px;
+      z-index: 50;
+    }
+
+    .gift {
+      width: 80px;
+      height: 80px;
+      animation: bounce 2s infinite;
+    }
+
+    .gift:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .gift:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .gift:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    .gift {
+      cursor: pointer;
+      transition: filter 0.2s ease;
+    }
+
+    .gift:hover {
+      filter: brightness(1.2);
+    }
+
+    #santa-sleigh {
+      position: fixed;
+      width: 120px;
+      height: auto;
+      cursor: pointer;
+      z-index: 40;
+      animation: fly 20s linear infinite;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    @keyframes fly {
+      0% {
+        left: -120px;
+        top: 10%;
+      }
+      25% {
+        left: 50%;
+        top: 5%;
+      }
+      50% {
+        left: calc(100% + 120px);
+        top: 20%;
+      }
+      75% {
+        left: 30%;
+        top: 15%;
+      }
+      100% {
+        left: -120px;
+        top: 10%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="home.html" class="back-button">← Retour</a>
+  <canvas id="snow"></canvas>
+  <img id="santa-sleigh" src="assets/papa.png" alt="Traîneau du Père Noël">
+
+  <div class="gifts-container">
+    <!-- Cadeau rouge -->
+    <svg class="gift" data-target="cad1.html" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="40" width="60" height="45" fill="#dc143c"/>
+      <rect x="45" y="35" width="10" height="50" fill="#ffd700"/>
+      <rect x="15" y="48" width="70" height="10" fill="#ffd700"/>
+      <circle cx="50" cy="35" r="8" fill="#ffed4e"/>
+    </svg>
+
+    <!-- Cadeau vert -->
+    <svg class="gift" data-target="cad2.html" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="40" width="60" height="45" fill="#228b22"/>
+      <rect x="45" y="35" width="10" height="50" fill="#ff1493"/>
+      <rect x="15" y="48" width="70" height="10" fill="#ff1493"/>
+      <circle cx="50" cy="35" r="8" fill="#ff69b4"/>
+    </svg>
+
+    <!-- Cadeau bleu -->
+    <svg class="gift" data-target="cad3.html" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="40" width="60" height="45" fill="#0066cc"/>
+      <rect x="45" y="35" width="10" height="50" fill="#ffff00"/>
+      <rect x="15" y="48" width="70" height="10" fill="#ffff00"/>
+      <circle cx="50" cy="35" r="8" fill="#ffff66"/>
+    </svg>
+  </div>
+
+  <script>
+    // Configuration du sapin
+    const CONFIG = {
+      'lights': 110,
+      'light-size': 1.3, // taille des lumières
+      'rotate': 2160, // rotation totale du sapin
+      'radius': 18, // profondeur des lumières
+      'height': 50, // hauteur du sapin 
+      'fill-star': 1, // remplir l'étoile
+      'flash-speed-min': 2, // vitesse minimale du clignotement
+      'flash-speed-max': 10,
+      'direction': 0,
+      'counter-star': 1,
+      'flash-steps': 1,
+      'spin-speed': 10,
+      'appear-speed': 0.5,
+      'appear-delay-step': 0.05,
+      'color-one': '#00aa00',
+      'color-two': '#ff0000',
+      'color-three': '#ffffff',
+      'color-four': '#00aa00',
+      'color-five': '#ff0000',
+    }
+
+    // Générer des couleurs aléatoires
+    const randomHex = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    
+    // Initialiser les couleurs (vert sapin, rouge, blanc)
+    CONFIG['color-one'] = '#00aa00'; // vert sapin
+    CONFIG['color-two'] = '#ff0000';
+    CONFIG['color-three'] = '#ffffff';
+    CONFIG['color-four'] = '#00aa00';
+    CONFIG['color-five'] = '#ff0000';
+
+    // Appliquer les variables CSS
+    const UPDATE = () => {
+      const whitelist = ['spin-speed', 'counter-star', 'light-size', 'color-one', 'color-two', 'color-three', 'color-four', 'color-five', 'fill-star', 'appear-speed', 'appear-delay-step', 'flash-steps'];
+      for (const key of Object.keys(CONFIG)) {
+        if (whitelist.includes(key)) {
+          const value = typeof CONFIG[key] === 'boolean' ? (CONFIG[key] ? 1 : 0) : CONFIG[key];
+          document.documentElement.style.setProperty(`--${key}`, value);
+        }
+        if (key === 'flash-steps') {
+          if (CONFIG[key] === 0) {
+            document.documentElement.style.setProperty('--flash-timing-function', 'ease-in-out');
+          } else {
+            document.documentElement.style.setProperty('--flash-timing-function', `steps(${CONFIG[key]})`);
+          }
+        }
+        if (key === 'direction') {
+          document.documentElement.style.setProperty('--direction', CONFIG[key] ? 'reverse' : 'normal');
+          document.documentElement.style.setProperty('--star-direction', CONFIG[key] ? 'normal' : 'reverse');
+        }
+      }
+    }
+
+    // Rendre le sapin
+    const RENDER = () => {
+      UPDATE();
+      
+      const tree = document.querySelector('.tree');
+      if (tree) tree.parentNode.removeChild(tree);
+      
+      const treeDiv = document.createElement('div');
+      treeDiv.className = 'tree';
+      
+      // Créer les lumières
+      for (let l = 0; l < CONFIG.lights; l++) {
+        const light = document.createElement('div');
+        light.className = 'tree__light';
+        light.style.setProperty('--appear', l);
+        light.style.setProperty('--delay', -l);
+        light.style.setProperty('--speed', (Math.random() * (CONFIG['flash-speed-max'] - CONFIG['flash-speed-min'])) + CONFIG['flash-speed-min']);
+        light.style.setProperty('--y', 100 / CONFIG.lights * l);
+        light.style.setProperty('--rotate', CONFIG.rotate / CONFIG.lights * (CONFIG.lights - l));
+        light.style.setProperty('--radius', CONFIG.radius / CONFIG.lights * (CONFIG.lights - l));
+        
+        // Cycler les couleurs
+        const colorIndex = l % 5;
+        light.style.setProperty('--color-one', CONFIG[`color-${['one', 'two', 'three', 'four', 'five'][colorIndex]}`]);
+        
+        treeDiv.appendChild(light);
+      }
+      
+      // Créer l'étoile
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'tree__star');
+      svg.setAttribute('viewBox', '0 0 113.32 108.44');
+      svg.style.setProperty('--delay', CONFIG.lights);
+      
+      const path = document.createElementNS(svg.namespaceURI, 'path');
+      path.setAttribute('d', 'M90.19 104.33L57.12 87.38 24.4 105l5.91-36.69L3.44 42.65l36.72-5.72 16.1-33.5L73.06 36.6l36.83 4.97-26.35 26.21z');
+      svg.appendChild(path);
+      treeDiv.appendChild(svg);
+      
+      document.body.appendChild(treeDiv);
+    }
+
+    // Initialiser
+    RENDER();
+
+    // Neige
+    (function(){
+      function startSnow(){
+        var canvas = document.getElementById('snow'); 
+        if(!canvas) return; 
+        var ctx = canvas.getContext('2d'); 
+        function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; } 
+        window.addEventListener('resize', resize); 
+        resize(); 
+        var flakes = []; 
+        for(var i=0;i<100;i++) flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:1+Math.random()*3,s:0.5+Math.random()*1.5}); 
+        function loop(){ 
+          ctx.clearRect(0,0,canvas.width,canvas.height); 
+          ctx.fillStyle='rgba(255,255,255,0.9)'; 
+          for(var i=0;i<flakes.length;i++){ 
+            var f=flakes[i]; 
+            ctx.beginPath(); 
+            ctx.arc(f.x,f.y,f.r,0,Math.PI*2); 
+            ctx.fill(); 
+            f.y+=f.s; 
+            f.x+=Math.sin(f.y*0.01)*0.6; 
+            if(f.y>canvas.height+10){ f.y=-10; f.x=Math.random()*canvas.width; }
+          } 
+          requestAnimationFrame(loop); 
+        } 
+        loop(); 
+      }
+      startSnow();
+    })();
+
+    // Jouer la musique au chargement
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const audio = new Audio('petit_papa.mp3');
+        audio.play();
+      }, 1000);
+    });
+
+    // Traîneau du Père Noël cliquable
+    const sleigh = document.getElementById('santa-sleigh');
+    sleigh.addEventListener('click', () => {
+      window.location.href = 'cad4.html';
+    });
+
+    // Cadeaux cliquables
+    document.querySelectorAll('.gift').forEach(gift => {
+      gift.addEventListener('click', () => {
+        const target = gift.getAttribute('data-target');
+        if (target) {
+          window.location.href = target;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

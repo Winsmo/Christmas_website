@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cadeau 2 - Noël</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Page cadeau 2">
+  <style>
+    body {
+      background: radial-gradient(circle at 10% 10%, #12351f 0%, transparent 40%), linear-gradient(135deg, #1a4d47, #072b2a);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      border-radius: 6px;
+      font-family: 'Mountains of Christmas', cursive;
+      z-index: 50;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+      color: white;
+      font-family: 'Mountains of Christmas', cursive;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin: 20px 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    p {
+      font-size: 1.5em;
+      margin: 20px 0;
+      max-width: 600px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .matcha-image {
+      max-width: 300px;
+      max-height: 300px;
+      width: 100%;
+      height: auto;
+      margin: 30px 0;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+      animation: spin-faster 2s linear 0s, spin-faster 1.5s linear 3s, spin-faster 1s linear 6s, spin-faster 0.5s linear 9s, spin-faster 0.3s linear 12s;
+    }
+
+    @keyframes spin-faster {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="cadeaux.html" class="back-button">← Retour</a>
+  <canvas id="snow"></canvas>
+  
+  <div class="content">
+    <h1>🧼 Savons Yves Rocher ❤️🧼</h1>
+    <img src="assets/yves.png" alt="Savons Yves Rocher" class="matcha-image">
+    <p>Parce que être propre dans la vie c'est vachement sous coté (et en plus ils sentent super bon❤️)</p>
+  </div>
+
+  <script>
+  (function(){
+    /* neige simple sur canvas */
+    var snowAnimationId = null;
+    window.startSnow = function(){
+      var canvas = document.getElementById('snow');
+      if(!canvas) return;
+      if(snowAnimationId) return;
+      var ctx = canvas.getContext('2d');
+      function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      window.addEventListener('resize', resize); resize();
+      var flakes = [];
+      for(var i=0;i<120;i++) flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:1+Math.random()*3,s:0.5+Math.random()*1.5});
+      function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='rgba(255,255,255,0.9)';
+        for(var i=0;i<flakes.length;i++){
+          var f=flakes[i];
+          ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+          f.y += f.s; f.x += Math.sin(f.y*0.01)*0.6;
+          if(f.y>canvas.height+10){ f.y=-10; f.x=Math.random()*canvas.width; }
+        }
+        snowAnimationId = requestAnimationFrame(loop);
+      }
+      loop();
+    };
+    window.stopSnow = function(){
+      if(snowAnimationId) cancelAnimationFrame(snowAnimationId);
+      snowAnimationId = null;
+      var canvas = document.getElementById('snow');
+      if(canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    };
+    
+    // Démarrer la neige au chargement
+    window.addEventListener('load', window.startSnow);
+  })();
+  </script>
+</body>
+</html>

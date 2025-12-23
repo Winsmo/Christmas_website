@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Accueil - Noël</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background: radial-gradient(circle at 10% 10%, #12351f 0%, transparent 40%), linear-gradient(135deg, #1a4d47, #072b2a);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 2;
+    }
+
+    .center-card {
+      max-width: 520px;
+      margin: 10vh auto;
+      padding: 32px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+      box-shadow: 0 18px 40px rgba(1, 6, 10, 0.55);
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+      z-index: 6;
+    }
+
+    .center-card::before {
+      content: '';
+      position: absolute;
+      left: -20%;
+      right: -20%;
+      top: -30%;
+      height: 220px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 245, 230, 0.12), transparent 45%);
+      opacity: 0.9;
+      transform: rotate(-6deg);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #c62828, #8b1e1e);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      cursor: default;
+      box-shadow: 0 6px 18px rgba(198, 40, 40, 0.18);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      font-family: 'Mountains of Christmas', cursive;
+      user-select: none;
+    }
+
+    .btn:hover {
+      transform: none;
+      box-shadow: 0 6px 18px rgba(198, 40, 40, 0.18);
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      border-radius: 6px;
+      font-family: 'Mountains of Christmas', cursive;
+      z-index: 50;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-button:active {
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .snow-layer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 140px;
+      z-index: 10;
+      pointer-events: none;
+      background: linear-gradient(180deg, 
+        transparent 0%,
+        transparent 20%,
+        #f0f8ff 40%,
+        #ffffff 70%,
+        #f5f5f5 100%
+      );
+    }
+
+    .snow-layer::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,80 Q25,70 50,80 T100,80 L100,100 L0,100 Z' fill='%23ffffff' opacity='0.8'/%3E%3C/svg%3E") repeat-x;
+      background-position: 0 0;
+      background-size: 100px 40px;
+    }
+
+    .snow-layer::after {
+      content: '';
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 10%,
+        rgba(255, 255, 255, 0.6) 90%,
+        transparent 100%
+      );
+      filter: blur(1px);
+    }
+
+    .snowman {
+      position: fixed;
+      bottom: 80px;
+      right: 40px;
+      z-index: 11;
+      pointer-events: none;
+    }
+
+    .snowballs-pile {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 11;
+      pointer-events: none;
+    }
+
+    .catapult-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 50;
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    #splatterCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-button">← Retour</a>
+  <canvas id="snow"></canvas>
+  <div class="snow-layer"></div>
+
+  <div class="snowman">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 300'%3E%3C!-- Shadow --%3E%3Cellipse cx='100' cy='280' rx='60' ry='8' fill='%23000' opacity='0.1'/%3E%3C!-- Bottom snowball --%3E%3Ccircle cx='100' cy='210' r='70' fill='%23ffffff'/%3E%3Cfilter id='shadow'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='3'/%3E%3C/filter%3E%3Ccircle cx='100' cy='210' r='70' fill='%23ffffff' filter='url(%23shadow)' opacity='0.3'/%3E%3C!-- Middle snowball --%3E%3Ccircle cx='100' cy='120' r='55' fill='%23ffffff'/%3E%3Ccircle cx='100' cy='120' r='55' fill='%23ffffff' filter='url(%23shadow)' opacity='0.3'/%3E%3C!-- Head --%3E%3Ccircle cx='100' cy='45' r='38' fill='%23ffffff'/%3E%3Ccircle cx='100' cy='45' r='38' fill='%23ffffff' filter='url(%23shadow)' opacity='0.3'/%3E%3C!-- Eyes (big cute eyes looking left) --%3E%3Ccircle cx='82' cy='40' r='5' fill='%23000'/%3E%3Ccircle cx='82' cy='40' r='3' fill='%23fff' opacity='0.6'/%3E%3Ccircle cx='108' cy='40' r='5' fill='%23000'/%3E%3Ccircle cx='108' cy='40' r='3' fill='%23fff' opacity='0.6'/%3E%3C!-- Carrot nose (centered) --%3E%3Cpolygon points='95,45 72,48 95,51' fill='%23ff8c00'/%3E%3C!-- Coal mouth smile --%3E%3Ccircle cx='75' cy='55' r='2.5' fill='%23000'/%3E%3Ccircle cx='82' cy='59' r='2.5' fill='%23000'/%3E%3Ccircle cx='90' cy='60' r='2.5' fill='%23000'/%3E%3Ccircle cx='98' cy='58' r='2.5' fill='%23000'/%3E%3C!-- Buttons --%3E%3Ccircle cx='100' cy='95' r='3' fill='%23000'/%3E%3Ccircle cx='100' cy='115' r='3' fill='%23000'/%3E%3Ccircle cx='100' cy='135' r='3' fill='%23000'/%3E%3C!-- Top hat --%3E%3Crect x='72' y='0' width='56' height='16' fill='%23000' rx='2'/%3E%3Crect x='68' y='14' width='64' height='6' fill='%23000'/%3E%3Crect x='80' y='19' width='40' height='3' fill='%23c41e3a'/%3E%3C!-- Red scarf --%3E%3Cpath d='M 65 78 Q 100 95 135 78' stroke='%23dc143c' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3Cpolygon points='68 85 55 105 70 95' fill='%23dc143c'/%3E%3Cpolygon points='132 85 145 105 130 95' fill='%23dc143c'/%3E%3C!-- Left stick arm --%3E%3Cline x1='45' y1='115' x2='0' y2='85' stroke='%23996633' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='2' y1='83' x2='-10' y2='70' stroke='%23996633' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='2' y1='83' x2='-8' y2='95' stroke='%23996633' stroke-width='3' stroke-linecap='round'/%3E%3C!-- Right stick arm --%3E%3Cline x1='155' y1='115' x2='200' y2='85' stroke='%23996633' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='198' y1='83' x2='210' y2='70' stroke='%23996633' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='198' y1='83' x2='208' y2='95' stroke='%23996633' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" alt="Bonhomme de neige" style="width: 125px; height: auto; filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.25));">
+  </div>
+
+  <div class="snowballs-pile">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 250'%3E%3C!-- Bottom row --%3E%3Ccircle cx='75' cy='200' r='45' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3Ccircle cx='150' cy='200' r='45' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3Ccircle cx='225' cy='200' r='45' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3C!-- Middle row --%3E%3Ccircle cx='112' cy='130' r='42' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3Ccircle cx='188' cy='130' r='42' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3C!-- Top ball --%3E%3Ccircle cx='150' cy='60' r='40' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1.5'/%3E%3C!-- Shadows for depth --%3E%3Cellipse cx='75' cy='245' rx='42' ry='6' fill='%23000' opacity='0.1'/%3E%3Cellipse cx='150' cy='245' rx='42' ry='6' fill='%23000' opacity='0.1'/%3E%3Cellipse cx='225' cy='245' rx='42' ry='6' fill='%23000' opacity='0.1'/%3E%3Cellipse cx='112' cy='172' rx='38' ry='5' fill='%23000' opacity='0.08'/%3E%3Cellipse cx='188' cy='172' rx='38' ry='5' fill='%23000' opacity='0.08'/%3E%3Cellipse cx='150' cy='102' rx='36' ry='5' fill='%23000' opacity='0.05'/%3E%3C/svg%3E" alt="Tas de boules de neige" style="width: 87px; height: auto; filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.2));">
+  </div>
+
+  <div class="catapult-container" id="catapultBtn">
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 120' width='100' height='85'>
+      <!-- Base robuste -->
+      <rect x='20' y='80' width='100' height='12' fill='%238B4513' rx='2'/>
+      <rect x='28' y='92' width='8' height='20' fill='%23654321'/>
+      <rect x='104' y='92' width='8' height='20' fill='%23654321'/>
+      <rect x='15' y='75' width='110' height='6' fill='%23A0522D'/>
+      
+      <!-- Support pivot central (axe) -->
+      <circle cx='70' cy='75' r='5' fill='%23FFD700'/>
+      <rect x='67' y='60' width='6' height='15' fill='%238B4513'/>
+      
+      <!-- Bras de catapulte avec articulation -->
+      <g id='catapultArm'>
+        <!-- Bras principal -->
+        <line x1='70' y1='60' x2='65' y2='15' stroke='%23996633' stroke-width='6' stroke-linecap='round'/>
+        <circle cx='65' cy='15' r='7' fill='%23FFD700'/>
+        
+        <!-- Contrepoids (seau/panier) -->
+        <rect x='60' y='5' width='10' height='12' fill='%238B4513' rx='1'/>
+        <line x1='60' y1='5' x2='70' y2='5' stroke='%236B3410' stroke-width='1'/>
+        
+        <!-- Boule de neige prête à être lancée -->
+        <circle cx='65' cy='10' r='6' fill='%23ffffff' stroke='%23e8e8e8' stroke-width='1'/>
+      </g>
+      
+      <!-- Fronde/cordes de maintien -->
+      <line x1='65' y1='20' x2='50' y2='50' stroke='%23654321' stroke-width='2' stroke-dasharray='2,2' opacity='0.6'/>
+      <line x1='65' y1='20' x2='80' y2='50' stroke='%23654321' stroke-width='2' stroke-dasharray='2,2' opacity='0.6'/>
+      
+      <!-- Support arrière -->
+      <line x1='70' y1='75' x2='85' y2='88' stroke='%238B4513' stroke-width='5' stroke-linecap='round'/>
+      
+      <!-- Détail: petits clous -->
+      <circle cx='40' cy='82' r='1.5' fill='%23333'/>
+      <circle cx='100' cy='82' r='1.5' fill='%23333'/>
+    </svg>
+  </div>
+
+  <canvas id="splatterCanvas"></canvas>
+
+  <div class="center-card" style="display:flex;flex-direction:row;gap:20px;align-items:center;justify-content:center;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:7;width:auto;">
+    <div class="btn" data-target="cadeaux.html" id="btn-cadeaux">Tes cadeaux 🎁</div>
+  </div>
+
+  <audio id="homeAudio" autoplay style="display:none;">
+    <source src="TheRonettes.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // Snow animation
+    const canvas = document.getElementById('snow');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const particles = [];
+    const particleCount = 100;
+    
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height - canvas.height;
+        this.size = Math.random() * 3 + 2;
+        this.speedX = Math.random() * 2 - 1;
+        this.speedY = Math.random() * 2 + 1;
+        this.opacity = Math.random() * 0.5 + 0.3;
+      }
+      
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        
+        if (this.y > canvas.height) {
+          this.y = -10;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+      
+      draw() {
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      
+      requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Contrôle de la musique
+    setTimeout(() => {
+      const audio = document.getElementById('homeAudio');
+      if (audio) {
+        audio.play().catch(err => console.log('Autoplay failed:', err));
+      }
+    }, 1000);
+
+    // Système de catapulte
+    const splatterCanvas = document.getElementById('splatterCanvas');
+    const splatCtx = splatterCanvas.getContext('2d');
+    splatterCanvas.width = window.innerWidth;
+    splatterCanvas.height = window.innerHeight;
+
+    let splatters = [];
+    let snowballs = [];
+    let aimingMode = false;
+    let aimingStart = null;
+    let aimingCurrent = null;
+
+    class Snowball {
+      constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.radius = 8;
+        this.gravity = 0.5;
+        this.active = true;
+        this.createdAt = Date.now();
+        this.lifetime = 1000; // 1 seconde en millisecondes
+      }
+
+      update() {
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Vérifier le timeout (1.8 secondes)
+        const elapsed = Date.now() - this.createdAt;
+        if (elapsed >= this.lifetime) {
+          console.log('Boule timeout à', this.x, this.y);
+          this.createSplatter();
+          this.active = false;
+          return;
+        }
+
+        // Vérifier collision avec les boutons
+        this.checkButtonCollision();
+
+        // Collision avec les bords
+        if (this.x - this.radius < 0 || this.x + this.radius > splatterCanvas.width ||
+            this.y - this.radius < 0 || this.y + this.radius > splatterCanvas.height) {
+          console.log('Boule collision bord à', this.x, this.y);
+          this.createSplatter();
+          this.active = false;
+        }
+      }
+
+      checkButtonCollision() {
+        // Vérifier collision avec les boutons
+        const buttons = document.querySelectorAll('.btn');
+        for (let button of buttons) {
+          const rect = button.getBoundingClientRect();
+          
+          // Centre et dimensions du bouton
+          const btnCenterX = rect.left + rect.width / 2;
+          const btnCenterY = rect.top + rect.height / 2;
+          const btnHalfWidth = rect.width / 2;
+          const btnHalfHeight = rect.height / 2;
+
+          // Distance entre le centre de la boule et le centre du bouton
+          const dx = this.x - btnCenterX;
+          const dy = this.y - btnCenterY;
+
+          // Collision circulaire avec le rectangle du bouton
+          const closestX = Math.max(-btnHalfWidth, Math.min(btnHalfWidth, dx));
+          const closestY = Math.max(-btnHalfHeight, Math.min(btnHalfHeight, dy));
+
+          const distance = Math.sqrt((dx - closestX) ** 2 + (dy - closestY) ** 2);
+
+          if (distance < this.radius) {
+            // Collision détectée!
+            const target = button.getAttribute('data-target');
+            console.log('Collision avec bouton, cible:', target);
+            // Créer le splatter
+            this.createSplatter(target);
+            // Rediriger IMMÉDIATEMENT
+            setTimeout(() => {
+              console.log('Redirection vers:', target);
+              window.location.href = target;
+            }, 100);
+            this.active = false;
+            return; // Arrêter après collision
+          }
+        }
+      }
+
+      createSplatter(targetPage = null) {
+        // Position du contact
+        let contactX = this.x;
+        let contactY = this.y;
+
+        // Ajuster la position du contact selon le bord touché
+        if (this.x - this.radius < 0) contactX = 0;
+        if (this.x + this.radius > splatterCanvas.width) contactX = splatterCanvas.width;
+        if (this.y - this.radius < 0) contactY = 0;
+        if (this.y + this.radius > splatterCanvas.height) contactY = splatterCanvas.height;
+
+        // Créer la tache
+        splatters.push({
+          x: contactX,
+          y: contactY,
+          radius: 15,
+          maxRadius: 35,
+          createdAt: Date.now(),
+          duration: 5000,
+          targetPage: targetPage
+        });
+      }
+
+      draw() {
+        if (!this.active) return;
+        splatCtx.beginPath();
+        splatCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        splatCtx.fillStyle = '#ffffff';
+        splatCtx.fill();
+        splatCtx.strokeStyle = '#e8e8e8';
+        splatCtx.lineWidth = 1;
+        splatCtx.stroke();
+      }
+    }
+
+    function drawSplatters() {
+      splatters = splatters.filter(splatter => {
+        const elapsed = Date.now() - splatter.createdAt;
+        const progress = elapsed / splatter.duration;
+
+        if (progress >= 1) return false;
+
+        // Tache grandit au début puis reste stable
+        const expandDuration = 300;
+        const expandProgress = Math.min(elapsed / expandDuration, 1);
+        const currentRadius = splatter.radius + (splatter.maxRadius - splatter.radius) * expandProgress;
+
+        // Opacité diminue vers la fin
+        const opacity = Math.max(0, 1 - Math.pow(progress, 2));
+
+        // Dessiner la tache avec des "pétales" pour un effet naturel
+        splatCtx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.7})`;
+        splatCtx.beginPath();
+        splatCtx.arc(splatter.x, splatter.y, currentRadius, 0, Math.PI * 2);
+        splatCtx.fill();
+
+        // Petit relief avec cercle blanc plus lumineux au centre
+        splatCtx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.9})`;
+        splatCtx.beginPath();
+        splatCtx.arc(splatter.x, splatter.y, currentRadius * 0.4, 0, Math.PI * 2);
+        splatCtx.fill();
+
+        return true;
+      });
+    }
+
+    function updateSnowballs() {
+      snowballs = snowballs.filter(ball => ball.active);
+      snowballs.forEach(ball => {
+        ball.update();
+        ball.draw();
+      });
+    }
+
+    function drawAimingTrajectory() {
+      if (!aimingMode || !aimingStart || !aimingCurrent) return;
+
+      const startX = aimingStart.x;
+      const startY = aimingStart.y;
+      const endX = aimingCurrent.x;
+      const endY = aimingCurrent.y;
+
+      // Calculer la distance (puissance)
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+
+      // Ligne principale du tir
+      splatCtx.strokeStyle = 'rgba(100, 200, 255, 0.8)';
+      splatCtx.lineWidth = 3;
+      splatCtx.setLineDash([]);
+      splatCtx.beginPath();
+      splatCtx.moveTo(startX, startY);
+      splatCtx.lineTo(endX, endY);
+      splatCtx.stroke();
+
+      // Tracer la trajectoire parabolique
+      splatCtx.strokeStyle = 'rgba(100, 200, 255, 0.4)';
+      splatCtx.lineWidth = 2;
+      splatCtx.setLineDash([4, 4]);
+      splatCtx.beginPath();
+
+      const gravity = 0.5;
+      const speed = Math.min(distance / 20, 30); // Vitesse basée sur la distance
+      const vx = speed * Math.cos(angle);
+      const vy = speed * Math.sin(angle);
+
+      let px = startX;
+      let py = startY;
+      let velocityX = vx;
+      let velocityY = vy;
+
+      splatCtx.moveTo(px, py);
+
+      for (let i = 0; i < 100; i++) {
+        velocityY += gravity;
+        px += velocityX;
+        py += velocityY;
+
+        // Arrêter si on sort de l'écran
+        if (px < 0 || px > splatterCanvas.width || py < 0 || py > splatterCanvas.height) break;
+
+        splatCtx.lineTo(px, py);
+      }
+
+      splatCtx.stroke();
+      splatCtx.setLineDash([]);
+
+      // Afficher la puissance
+      const power = Math.min(100, Math.round((distance / 300) * 100));
+      splatCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      splatCtx.font = 'bold 20px Arial';
+      splatCtx.fillText(`Puissance: ${power}%`, startX + 20, startY - 20);
+
+      // Point de visée
+      splatCtx.fillStyle = 'rgba(100, 200, 255, 0.9)';
+      splatCtx.beginPath();
+      splatCtx.arc(endX, endY, 6, 0, Math.PI * 2);
+      splatCtx.fill();
+    }
+
+    function animateCatapult(angle, power) {
+      const arm = document.getElementById('catapultArm');
+      if (!arm) return;
+
+      arm.style.transition = 'none';
+      arm.style.transformOrigin = '70px 75px';
+      arm.style.transform = `rotate(-60deg)`;
+
+      setTimeout(() => {
+        arm.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        arm.style.transform = 'rotate(0deg)';
+      }, 50);
+    }
+
+    const catapultBtn = document.getElementById('catapultBtn');
+    if (catapultBtn) {
+      catapultBtn.addEventListener('click', () => {
+        aimingMode = !aimingMode;
+
+        if (aimingMode) {
+          // Entrer en mode visée
+          aimingStart = null;
+          aimingCurrent = null;
+
+          const rect = catapultBtn.getBoundingClientRect();
+          aimingStart = {
+            x: rect.right - 30,
+            y: rect.top + 15
+          };
+
+          // Changer le curseur pour indiquer le mode
+          document.body.style.cursor = 'crosshair';
+        } else {
+          // Quitter le mode visée
+          document.body.style.cursor = 'default';
+          aimingStart = null;
+          aimingCurrent = null;
+        }
+      });
+    }
+
+    // Mouvements de la souris en mode visée
+    document.addEventListener('mousemove', (e) => {
+      if (aimingMode && aimingStart) {
+        aimingCurrent = {
+          x: e.clientX,
+          y: e.clientY
+        };
+      }
+    });
+
+    // Clic pour tirer
+    document.addEventListener('click', (e) => {
+      if (aimingMode && aimingStart && aimingCurrent) {
+        // Calculer la direction et la puissance
+        const dx = aimingCurrent.x - aimingStart.x;
+        const dy = aimingCurrent.y - aimingStart.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+
+        // Puissance basée sur la distance (limité à 30)
+        const speed = Math.min(distance / 20, 30);
+        const vx = speed * Math.cos(angle);
+        const vy = speed * Math.sin(angle);
+
+        // Créer la boule
+        snowballs.push(new Snowball(aimingStart.x, aimingStart.y, vx, vy));
+
+        // Animer la catapulte
+        animateCatapult(angle, speed);
+
+        // Quitter le mode visée
+        aimingMode = false;
+        aimingStart = null;
+        aimingCurrent = null;
+        document.body.style.cursor = 'default';
+
+        e.stopPropagation();
+      }
+    });
+
+    function animateSplatters() {
+      splatCtx.clearRect(0, 0, splatterCanvas.width, splatterCanvas.height);
+      drawAimingTrajectory(); // Dessiner la trajectoire de visée
+      drawSplatters();
+      updateSnowballs();
+      requestAnimationFrame(animateSplatters);
+    }
+
+    animateSplatters();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      splatterCanvas.width = window.innerWidth;
+      splatterCanvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>

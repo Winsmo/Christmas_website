@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rétrospective 2025 - Noël</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="snow"></canvas>
+  <!-- Garland bulbs removed -->
+
+  <main class="center-card">
+    <h1>Ma rétrospective 2025 ✨</h1>
+    <img src="assets/star.svg" class="decor decor-star" alt="Étoile"/>
+    <p>Ici, tu peux raconter les moments marquants de 2025, ajouter des photos ou des souvenirs.</p>
+    <p class="small"><a href="home.html">Retour</a></p>
+  </main>
+
+  <script>
+    (function(){
+      function startSnow(){
+        var canvas = document.getElementById('snow'); if(!canvas) return; var ctx = canvas.getContext('2d'); function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; } window.addEventListener('resize', resize); resize(); var flakes = []; for(var i=0;i<90;i++) flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:1+Math.random()*3,s:0.5+Math.random()*1.5}); function loop(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='rgba(255,255,255,0.9)'; for(var i=0;i<flakes.length;i++){ var f=flakes[i]; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); f.y+=f.s; f.x+=Math.sin(f.y*0.01)*0.6; if(f.y>canvas.height+10){ f.y=-10; f.x=Math.random()*canvas.width; }} requestAnimationFrame(loop);} loop(); }
+      startSnow();
+    })();
+  </script>
+</body>
+</html>

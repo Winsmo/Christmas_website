@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Accès - Noël</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Page d'accès au site de Noël (mot de passe requis)">
+</head>
+<body>
+  <canvas id="snow"></canvas>
+  <!-- Garland removed (bulbs) per user request -->
+
+  <div id="lampContainer" style="position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);z-index:100;width:350px;height:550px;overflow:hidden;clip-path:inset(25% 25% 25% 25% round 20px)">
+    <iframe id="lampFrame" src="lamp/index.html" title="Lampe de Noël" style="width:100%;height:100%;border:none;background:transparent"></iframe>
+  </div>
+
+  <main class="center-card" style="opacity:0;pointer-events:none" aria-hidden="true">
+    <h1>Bienvenue Kopine Joyeux Noël 🎄</h1>
+    <p class="intro">Entre le mot de passe pour accéder aux surprises.</p>
+    <form id="pwdForm">
+      <input id="password" type="password" placeholder="Mot de passe" autocomplete="off" required />
+      <button type="submit" class="btn">Entrer</button>
+      <div id="msg" class="msg" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <audio id="bgAudio" style="display:none;">
+    <source src="time.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- debug controls removed -->
+
+  <script>
+  (function(){
+    /* mot de passe */
+    var form = document.getElementById('pwdForm');
+    var msg = document.getElementById('msg');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var p = document.getElementById('password').value || '';
+      if(p === 'Noel'){
+        window.location.href = 'home.html';
+      } else {
+        msg.textContent = 'Mot de passe incorrect.';
+        msg.classList.add('error');
+        setTimeout(function(){ msg.textContent = ''; msg.classList.remove('error'); }, 2000);
+      }
+    });
+
+    /* neige simple sur canvas */
+    var snowAnimationId = null;
+    window.startSnow = function(){
+      var canvas = document.getElementById('snow');
+      if(!canvas) return;
+      if(snowAnimationId) return;
+      var ctx = canvas.getContext('2d');
+      function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      window.addEventListener('resize', resize); resize();
+      var flakes = [];
+      for(var i=0;i<120;i++) flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:1+Math.random()*3,s:0.5+Math.random()*1.5});
+      function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='rgba(255,255,255,0.9)';
+        for(var i=0;i<flakes.length;i++){
+          var f=flakes[i];
+          ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+          f.y += f.s; f.x += Math.sin(f.y*0.01)*0.6;
+          if(f.y>canvas.height+10){ f.y=-10; f.x=Math.random()*canvas.width; }
+        }
+        snowAnimationId = requestAnimationFrame(loop);
+      }
+      loop();
+    };
+    window.stopSnow = function(){
+      if(snowAnimationId) cancelAnimationFrame(snowAnimationId);
+      snowAnimationId = null;
+      var canvas = document.getElementById('snow');
+      if(canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    };
+  })();
+  </script>
+
+  <script>
+  (function(){
+    var frame = document.getElementById('lampFrame');
+    var card = document.querySelector('.center-card');
+    if(!card) return;
+    card.style.transition = 'opacity .35s ease';
+    
+    var lastVisibleState = null;
+
+    function setVisible(v){
+      // Éviter les appels répétés du même état
+      if(lastVisibleState === v) return;
+      lastVisibleState = v;
+      
+      if(v){
+        card.style.opacity = '1';
+        card.style.pointerEvents = 'auto';
+        card.setAttribute('aria-hidden','false');
+        if(window.startSnow) window.startSnow();
+        var audio = document.getElementById('bgAudio');
+        if(audio){
+          setTimeout(function(){
+            audio.currentTime = 0;
+            audio.volume = 1;
+            audio.play().catch(function(e){
+              console.log('[AUDIO] Play failed:', e);
+            });
+          }, 2000);
+        }
+      } else {
+        card.style.opacity = '0';
+        card.style.pointerEvents = 'none';
+        card.setAttribute('aria-hidden','true');
+        if(window.stopSnow) window.stopSnow();
+        var audio = document.getElementById('bgAudio');
+        if(audio){
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      }
+    }
+
+    // initialize hidden until lamp state is read
+    setVisible(false);
+
+    function updateFromFrame(){
+      try{
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        if(!doc) {
+          console.log('iframe doc not accessible');
+          return;
+        }
+        // Robust check: prefer property then attribute
+        var onEl = doc.getElementById('on');
+        var offEl = doc.getElementById('off');
+        var isOn = false;
+        if(onEl){
+          isOn = !!(onEl.checked || onEl.getAttribute('checked') === 'true' || onEl.getAttribute('checked') !== null);
+        }
+        // fallback: query :checked
+        if(!onEl){
+          var checked = doc.querySelector('input[name="status"]:checked');
+          isOn = !!(checked && checked.value === 'on');
+        }
+        console.log('lamp state detected isOn=', isOn);
+        setVisible(isOn);
+        // debug UI removed (lampStatus no longer present)
+      }catch(e){
+        console.log('Error reading iframe:', e && e.message);
+      }
+    }
+
+    frame.addEventListener('load', function(){
+      updateFromFrame();
+      try{
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        var html = doc.documentElement;
+        var body = doc.body;
+        if(html){
+          html.style.backgroundColor = 'transparent';
+          html.style.background = 'transparent';
+        }
+        if(body){
+          body.style.backgroundColor = 'transparent';
+          body.style.background = 'transparent';
+          body.style.backgroundImage = 'none';
+          var style = doc.createElement('style');
+          style.textContent = 'html, body { background: transparent !important; background-color: transparent !important; background-image: none !important; }';
+          doc.head.appendChild(style);
+        }
+        // Listen to clicks and changes on radio buttons
+        var radios = doc.querySelectorAll('input[name="status"]');
+        radios.forEach(function(r){
+          r.addEventListener('change', updateFromFrame);
+          r.addEventListener('click', updateFromFrame);
+        });
+        
+        // MutationObserver pour détecter les changements d'attributs checked
+        var observer = new MutationObserver(updateFromFrame);
+        radios.forEach(function(r){
+          observer.observe(r, { attributes: true, attributeFilter: ['checked'] });
+        });
+      }catch(e){}
+      
+      // Polling régulier (chaque 300ms)
+      setInterval(updateFromFrame, 300);
+    });
+
+
+
+    // Click on lamp container also forces a check
+    var lampContainer = document.getElementById('lampContainer');
+    if(lampContainer){
+      lampContainer.addEventListener('click', function(){ try{ updateFromFrame(); }catch(e){} });
+    }
+
+    setTimeout(function(){
+      try{
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        if(doc){
+          var html = doc.documentElement;
+          var body = doc.body;
+          if(html){
+            html.style.backgroundColor = 'transparent';
+            html.style.background = 'transparent';
+          }
+          if(body){
+            body.style.backgroundColor = 'transparent';
+            body.style.background = 'transparent';
+            body.style.backgroundImage = 'none';
+          }
+        }
+      }catch(e){}
+      updateFromFrame();
+    }, 800);
+  })();
+  </script>
+</body>
+</html>
